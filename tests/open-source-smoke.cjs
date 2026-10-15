@@ -1,9 +1,9 @@
 const {_electron}=require('playwright'),path=require('path'),fs=require('fs'),os=require('os'),assert=require('assert');
 (async()=>{
  const profile=fs.mkdtempSync(path.join(os.tmpdir(),'egglive-smoke-'));
- const app=await _electron.launch({executablePath:require('electron'),args:['.','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'],cwd:path.resolve('.'),env:{...process.env,EGGLIVE_DATA_DIR:profile,EGGLIVE_TRACKING_BACKEND:'CPU'}});
- let p;try{
-  p=await app.firstWindow();const errors=[],external=[];p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(!/^(http:\/\/127\.0\.0\.1:18739\/|data:|blob:)/.test(r.url()))external.push(r.url());});
+ const app=await _electron.launch({executablePath:require('electron'),args:['.','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream','--use-gl=angle','--use-angle=swiftshader-webgl','--enable-unsafe-swiftshader','--disable-gpu-sandbox'],cwd:path.resolve('.'),env:{...process.env,EGGLIVE_DATA_DIR:profile,EGGLIVE_TRACKING_BACKEND:'CPU'}});
+ let p;const errors=[],external=[];try{
+  p=await app.firstWindow();p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(!/^(http:\/\/127\.0\.0\.1:18739\/|data:|blob:)/.test(r.url()))external.push(r.url());});
   await p.waitForFunction(()=>['ready','error'].includes(window.eggTest?.diagnostics().model),{},{timeout:60000,polling:250});assert.equal(await p.evaluate(()=>window.eggTest.diagnostics().model),'ready',JSON.stringify(await p.evaluate(()=>window.eggTest.diagnostics())));await p.click('#pause');
   const input=fs.readFileSync('docs/assets/demo-portrait.png').toString('base64');
   const result=await p.evaluate(async input=>{
@@ -19,6 +19,6 @@ const {_electron}=require('playwright'),path=require('path'),fs=require('fs'),os
   assert.equal(result.landmarks,478);assert(result.rejected&&result.ready&&result.saved);assert.equal(result.eyeDelta,0);assert(result.opaque>1000);
   await p.reload();await p.waitForFunction(()=>window.eggTest?.eyeState().enabled,{},{timeout:20000,polling:250});await p.click('#eye-clear');assert(await p.evaluate(()=>localStorage.getItem('egg-eye-reference')===null));assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
   console.log(JSON.stringify({pass:true,...result,restoredAndDeleted:true,rendererErrors:errors.length,externalRequests:external.length},null,2));
- }finally{await Promise.race([app.close(),new Promise(r=>setTimeout(r,10000))]);}
+ }catch(e){console.error('Smoke diagnostics',JSON.stringify({url:p?.url(),errors,page:p?await p.evaluate(()=>({status:document.getElementById('status')?.textContent,diagnostics:window.eggTest?.diagnostics()})).catch(()=>null):null,gpu:await app.evaluate(({app})=>app.getGPUFeatureStatus()).catch(()=>null)}));throw e;}finally{await Promise.race([app.close(),new Promise(r=>setTimeout(r,10000))]);}
  process.exit(0);
 })().catch(e=>{console.error(e);process.exit(1)});
