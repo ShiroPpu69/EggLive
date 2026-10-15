@@ -1,0 +1,13 @@
+name: Feature request / 功能建议
+description: Describe a useful improvement for creators or developers.
+body:
+  - type: textarea
+    id: use_case
+    attributes:
+      label: What would this help you do? / 想解决什么问题？
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior / 期望的使用方式

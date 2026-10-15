@@ -1,0 +1,38 @@
+{
+  "name": "egg-live",
+  "version": "1.6.1",
+  "description": "Turn your webcam into a realistic 3D egg. Offline face tracking, springy motion, and transparent OBS output for Windows.",
+  "main": "main.cjs",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "start": "electron .",
+    "package": "electron-packager . EggLive --platform=win32 --arch=x64 --out=release --overwrite --ignore=^/release --ignore=^/OBS --ignore=^/downloads --ignore=^/tests --ignore=^/research --ignore=^/src --ignore=^/egg-lens-research --ignore=^/snap-assets-research --ignore=^/installers --ignore=^/installer-resources --ignore=^/docs --ignore=^/scripts --ignore=^/licenses",
+    "installer": "npm run build && electron-builder --win nsis --x64 --config electron-builder.json",
+    "setup": "node scripts/prepare-assets.mjs",
+    "test": "node tests/rtc-offer-order.cjs",
+    "test:smoke": "node tests/open-source-smoke.cjs"
+  },
+  "dependencies": {
+    "ws": "8.22.0"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "@mediapipe/tasks-vision": "0.10.32",
+    "electron": "44.7.2",
+    "electron-builder": "^26.15.3",
+    "playwright": "1.56.1",
+    "three": "0.180.0",
+    "vite": "7.3.7"
+  },
+  "author": "ShiroPpu69",
+  "license": "MIT",
+  "homepage": "https://github.com/ShiroPpu69/EggLive",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ShiroPpu69/EggLive.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ShiroPpu69/EggLive/issues"
+  }
+}

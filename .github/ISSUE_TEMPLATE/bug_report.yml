@@ -1,0 +1,29 @@
+name: Bug report / 问题反馈
+description: Report a reproducible tracking, rendering, camera, or OBS problem.
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened? / 出现了什么问题？
+      description: Include steps, expected behavior, and actual behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 运行环境
+      placeholder: EggLive version, Windows version, CPU, GPU, driver, camera model, quality setting, OBS version
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / 截图与日志
+      description: Remove usernames, private paths, personal eye references, OBS passwords, tokens, and stream keys. Share face/voice recordings only with permission.
+  - type: checkboxes
+    id: reproduction
+    attributes:
+      label: Testing context / 验证范围
+      options:
+        - label: I tested with a physical webcam / 我使用真实摄像头测试
+        - label: The problem also occurs without OBS / 不打开 OBS 也会出现

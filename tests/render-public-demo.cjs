@@ -1,0 +1,17 @@
+const {_electron}=require('playwright'),fs=require('fs'),path=require('path'),os=require('os');
+(async()=>{
+ const out=path.resolve('tests/artifacts/public-demo');fs.mkdirSync(out,{recursive:true});
+ const app=await _electron.launch({executablePath:require('electron'),args:['.','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream'],cwd:path.resolve('.'),env:{...process.env,EGGLIVE_DATA_DIR:fs.mkdtempSync(path.join(os.tmpdir(),'egglive-demo-'))}});
+ try{
+  const p=await app.firstWindow();await p.waitForFunction(()=>window.eggTest?.diagnostics().model==='ready',{},{timeout:60000});await p.click('#pause');
+  await p.evaluate(async input=>{const i=new Image();i.src='data:image/png;base64,'+input;await i.decode();window.demoInput=i;await window.eggTest.detect(i);document.getElementById('glare').value=0;document.getElementById('glare').dispatchEvent(new Event('input'));},fs.readFileSync('docs/assets/demo-portrait.png').toString('base64'));
+  await p.selectOption('#shell','brown');await p.waitForTimeout(1000);
+  const hero=await p.evaluate(()=>{window.eggTest.renderSource(window.demoInput,window.eggTest.getResult());const image=document.querySelector('#stage canvas').toDataURL('image/png');const panel=document.createElement('div');panel.id='public-hero';document.documentElement.style.overflow='hidden';document.body.style.overflow='hidden';panel.style.cssText='position:fixed;left:0;top:0;z-index:9999;width:1200px;height:540px;background:#131a20;overflow:hidden;color:#f2eee7;font-family:Segoe UI,sans-serif;padding:64px;';panel.innerHTML=`<div style="font-size:15px;letter-spacing:4px;color:#d8b578">LOCAL FACE TRACKING / WINDOWS</div><div style="position:relative;z-index:1;margin-top:35px;font-size:88px;line-height:1;font-weight:750;letter-spacing:-5px">EggLive<span style="color:#dfb878">.</span></div><div style="position:relative;z-index:1;font-size:29px;line-height:1.35;margin-top:25px;color:#ddd7cc">Your face.<br>A very serious egg.</div><div style="margin-top:38px;font-size:16px;color:#9ca9ad">30 FPS target &nbsp;·&nbsp; Offline &nbsp;·&nbsp; OBS ready</div><img style="position:absolute;width:890px;height:500px;right:-170px;top:22px;object-fit:contain" src="${image}"><div style="position:absolute;right:40px;bottom:24px;color:#829298;font-size:11px">ACTUAL RENDER · SYNTHETIC DEMO FACE</div>`;document.body.appendChild(panel);return image;});
+  await p.locator('#public-hero img').evaluate(i=>i.decode());await p.locator('#public-hero').screenshot({path:'docs/assets/hero.png'});await p.evaluate(()=>document.getElementById('public-hero').remove());
+  await p.click('#demo');
+  for(let i=0;i<48;i++){
+   const png=await p.evaluate(()=>{const api=window.eggTest;api.renderSource(window.demoInput,api.getResult());const source=document.querySelector('#stage canvas'),c=document.createElement('canvas');c.width=640;c.height=360;const x=c.getContext('2d');x.fillStyle='#171d23';x.fillRect(0,0,640,360);x.drawImage(source,0,0);x.font='600 15px Segoe UI';x.fillStyle='#dfb878';x.fillText('EggLive',22,30);x.font='11px Segoe UI';x.fillStyle='#9da8ac';x.fillText('ACTUAL RENDER / SYNTHETIC INPUT',22,340);return c.toDataURL('image/png');});fs.writeFileSync(path.join(out,String(i).padStart(3,'0')+'.png'),Buffer.from(png.split(',')[1],'base64'));await p.waitForTimeout(83);
+  }
+  console.log('Saved public demo frames and docs/assets/hero.png');
+ }finally{await Promise.race([app.close(),new Promise(r=>setTimeout(r,10000))]);}process.exit(0);
+})().catch(e=>{console.error(e);process.exit(1)});
