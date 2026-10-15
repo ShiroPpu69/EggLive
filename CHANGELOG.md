@@ -5,6 +5,7 @@
 - Publish the original Electron/Three.js avatar implementation under MIT, with separate third-party notices.
 - Add English/Chinese documentation, a privacy-safe synthetic demo, OBS guidance, source asset preparation, and Windows CI checks.
 - Update `ws` to 8.22.0, Vite to 7.3.7, and Electron Packager to 20.3.0. Publication-time npm audit reports no production-dependency advisories; development transitive advisories are documented in SECURITY.md.
+- Wait for OBS scene initialization after authentication so cold startup does not require a second button click.
 - Add an optional CPU tracking backend for CI and driver troubleshooting. Normal launches continue to prefer GPU.
 
 Includes the 1.6 features: personal clean-eye reference animation, matched-frame facial crops, smoothed pose and brief detection-gap handling, 30 FPS output, and improved OBS WebRTC signaling/reconnection.

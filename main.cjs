@@ -93,7 +93,9 @@ async function openOBS(virtual=false){
  for(let i=0;!client&&i<25;i++){try{client=await connectOBS(password);}catch{await new Promise(r=>setTimeout(r,600));}}
  if(!client)throw new Error('OBS 尚未就绪。请稍后再点一次；详情见日志。');
  try{
-  const scenes=await client.call('GetSceneList');if(!scenes.scenes.some(s=>s.sceneName==='EggLive'))await client.call('CreateScene',{sceneName:'EggLive'});
+  // Authentication can finish before OBS has loaded its initial collection.
+  let scenes;for(let attempt=0;attempt<20;attempt++){try{scenes=await client.call('GetSceneList');break;}catch(e){if(!/not ready|尚未就绪/i.test(e.message)||attempt===19)throw e;await new Promise(r=>setTimeout(r,350));}}
+  if(!scenes.scenes.some(s=>s.sceneName==='EggLive'))await client.call('CreateScene',{sceneName:'EggLive'});
   const inputs=await client.call('GetInputList');
   const outputURL=HOST+'/output.html?v='+app.getVersion();
   if(!inputs.inputs.some(i=>i.inputName==='EggLive 透明形象'))await client.call('CreateInput',{sceneName:'EggLive',inputName:'EggLive 透明形象',inputKind:'browser_source',inputSettings:{url:outputURL,width:1280,height:720,fps:30,fps_custom:true,shutdown:false,restart_when_active:false},sceneItemEnabled:true});
